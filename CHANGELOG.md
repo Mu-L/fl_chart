@@ -1,7 +1,45 @@
-## nextVersion
+## newVersion
+* **IMPROVEMENT** (by @imaNNeo) Add Flutter sdk constraints to the pubspec.yaml to force the user/developer to upgrade the Flutter version to 3.16.0 (latest), #1509
+* **IMPROVEMENT** (by @imaNNeo) Add `dotPainter` property to ScatterSpot to allow customizing the dot painter, #568
+* **BREAKING** (by @imaNNeo) Remove `color` and `radius` properties from ScatterSpot (use `dotPainter` instead), #568
+* **BREAKING** (by @imaNNeo) Change the default value of FlDotCirclePainter.`strokeWidth` to 0.0
+```dart
+/// Migration guide:
+/// This is the old way:
+ScatterSpot(
+  2,
+  5,
+  color: Colors.red,
+  radius: 12,
+)
+
+/// This is the new way:
+ScatterSpot(
+  2,
+  8,
+  dotPainter: FlDotCirclePainter(
+    color: Colors.red,
+    radius: 22,
+  ),
+),
+```
+* **BUGFIX** (by @imaNNeo) Fix barChart tooltip for values below or above the 0 point, #1462
+* **BUGFIX** (by @imaNNeo) Fix pieChart drawing single section on iPhone, #1515
+* **IMPROVEMENT** (by @imaNNeo) Add gradient property to the [HorizontalLine](https://github.com/imaNNeo/fl_chart/blob/master/repo_files/documentations/base_chart.md#horizontalline) and [VerticalLine](https://github.com/imaNNeo/fl_chart/blob/master/repo_files/documentations/base_chart.md#verticalline), #1525
+
+## 0.65.0
+* **FEATURE** (by @Dartek12) Added gradient to [FlLine](https://github.com/imaNNeo/fl_chart/blob/master/repo_files/documentations/base_chart.md#FlLine), #1197
+* **BUGFIX** (by @imaNNeo) Fix bar line shadow crash when we have only one (or zero) spot, #1466
+* **BUGFIX** (by @imaNNeo) Fix having negative `toY` (or positive `fromY`) in BarChart's `minY` and `maxY` calculations, #1470
+* **BUGFIX** (by @bobatsar) Fix bars drawn outside of diagram
+* **FEATURE** (by @k0psutin) Add dashed border to BarChartRodData, #1144
+* **FEATURE** (by @imaNNeo) Allow to show single point line in LineChart, #1438
+
+## 0.64.0
 * **BUGFIX** (by @Anas35) Fix Tooltip not displaying when value from BackgroundBarChartRodData is less than zero. #1345.
 * **BUGFIX** (by @imaNNeo) Fix Negative BarChartRodStackItem are not drawn correctly bug, #1347
 * **BUGFIX** (by @imaNNeo) Fix bar_chart_helper minY calculation bug, #1388
+* **IMPROVEMENT** (by @imaNNeo) Consider fraction digits when formatting chart side titles, #1267
 
 ## 0.63.0
 * **BUGFIX** (by @imaNNeo) Fix PieChart crash on web-renderer html by ignoring `sectionsSpace` when `Path.combine()` does not work (it's flutter engine [issue](https://github.com/flutter/flutter/issues/44572)), #955

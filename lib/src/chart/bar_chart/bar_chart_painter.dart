@@ -6,6 +6,7 @@ import 'package:fl_chart/src/chart/base/axis_chart/axis_chart_painter.dart';
 import 'package:fl_chart/src/chart/base/base_chart/base_chart_painter.dart';
 import 'package:fl_chart/src/extensions/bar_chart_data_extension.dart';
 import 'package:fl_chart/src/extensions/paint_extension.dart';
+import 'package:fl_chart/src/extensions/path_extension.dart';
 import 'package:fl_chart/src/extensions/rrect_extension.dart';
 import 'package:fl_chart/src/utils/canvas_wrapper.dart';
 import 'package:fl_chart/src/utils/utils.dart';
@@ -277,14 +278,6 @@ class BarChartPainter extends AxisChartPainter<BarChartData> {
           );
           canvasWrapper.drawRRect(barRRect, _barPaint);
 
-          // draw border stroke
-          if (borderSide.width > 0 && borderSide.color.opacity > 0) {
-            _barStrokePaint
-              ..color = borderSide.color
-              ..strokeWidth = borderSide.width;
-            canvasWrapper.drawRRect(barRRect, _barStrokePaint);
-          }
-
           // draw rod stack
           if (barRod.rodStackItems.isNotEmpty) {
             for (var i = 0; i < barRod.rodStackItems.length; i++) {
@@ -315,6 +308,22 @@ class BarChartPainter extends AxisChartPainter<BarChartData> {
                 holder,
               );
             }
+          }
+
+          // draw border stroke
+          if (borderSide.width > 0 && borderSide.color.opacity > 0) {
+            _barStrokePaint
+              ..color = borderSide.color
+              ..strokeWidth = borderSide.width;
+
+            final borderPath = Path()..addRRect(barRRect);
+
+            canvasWrapper.drawPath(
+              borderPath.toDashedPath(
+                barRod.borderDashArray,
+              ),
+              _barStrokePaint,
+            );
           }
         }
       }
@@ -358,7 +367,7 @@ class BarChartPainter extends AxisChartPainter<BarChartData> {
       text: span,
       textAlign: tooltipItem.textAlign,
       textDirection: tooltipItem.textDirection,
-      textScaleFactor: holder.textScale,
+      textScaler: holder.textScaler,
     )..layout(maxWidth: tooltipData.maxContentWidth);
 
     /// creating TextPainters to calculate the width and height of the tooltip
@@ -377,17 +386,21 @@ class BarChartPainter extends AxisChartPainter<BarChartData> {
     /// if we have multiple bar lines,
     /// there are more than one FlCandidate on touch area,
     /// we should get the most top FlSpot Offset to draw the tooltip on top of it
-    final barOffset = Offset(
+    final barToYPixel = Offset(
       groupPositions[barGroupIndex].barsX[barRodIndex],
       getPixelY(showOnRodData.toY, viewSize, holder),
+    );
+
+    final barFromYPixel = Offset(
+      groupPositions[barGroupIndex].barsX[barRodIndex],
+      getPixelY(showOnRodData.fromY, viewSize, holder),
     );
 
     final tooltipWidth = textWidth + tooltipData.tooltipPadding.horizontal;
     final tooltipHeight = textHeight + tooltipData.tooltipPadding.vertical;
 
-    final zeroY = getPixelY(0, viewSize, holder);
-    final barTopY = min(zeroY, barOffset.dy);
-    final barBottomY = max(zeroY, barOffset.dy);
+    final barTopY = min(barToYPixel.dy, barFromYPixel.dy);
+    final barBottomY = max(barToYPixel.dy, barFromYPixel.dy);
     final drawTooltipOnTop = tooltipData.direction == TooltipDirection.top ||
         (tooltipData.direction == TooltipDirection.auto &&
             showOnRodData.isUpward());
@@ -396,7 +409,7 @@ class BarChartPainter extends AxisChartPainter<BarChartData> {
         : barBottomY + tooltipData.tooltipMargin;
 
     final tooltipLeft = getTooltipLeft(
-      barOffset.dx,
+      barToYPixel.dx,
       tooltipWidth,
       tooltipData.tooltipHorizontalAlignment,
       tooltipData.tooltipHorizontalOffset,

@@ -36,7 +36,8 @@ void main() {
       );
 
       final pieChartPainter = PieChartPainter();
-      final holder = PaintHolder<PieChartData>(data, data, 1);
+      final holder =
+          PaintHolder<PieChartData>(data, data, TextScaler.noScaling);
 
       final mockUtils = MockUtils();
       Utils.changeInstance(mockUtils);
@@ -96,7 +97,8 @@ void main() {
       );
 
       final barChartPainter = PieChartPainter();
-      final holder = PaintHolder<PieChartData>(data, data, 1);
+      final holder =
+          PaintHolder<PieChartData>(data, data, TextScaler.noScaling);
 
       final mockCanvasWrapper = MockCanvasWrapper();
       when(mockCanvasWrapper.size).thenAnswer((realInvocation) => viewSize);
@@ -115,10 +117,12 @@ void main() {
     test('test 1', () {
       const viewSize = Size(200, 200);
 
+      const radius = 30.0;
+      const centerSpace = 10.0;
       final sections = [
         PieChartSectionData(
           color: MockData.color2,
-          radius: 30,
+          radius: radius,
           value: 10,
           borderSide: const BorderSide(
             color: MockData.color3,
@@ -131,24 +135,39 @@ void main() {
       );
 
       final barChartPainter = PieChartPainter();
-      final holder = PaintHolder<PieChartData>(data, data, 1);
+      final holder =
+          PaintHolder<PieChartData>(data, data, TextScaler.noScaling);
 
       final mockCanvasWrapper = MockCanvasWrapper();
       when(mockCanvasWrapper.size).thenAnswer((realInvocation) => viewSize);
       when(mockCanvasWrapper.canvas).thenReturn(MockCanvas());
       barChartPainter.drawSections(mockCanvasWrapper, [360], 10, holder);
 
-      final result = verify(
+      final rect = Rect.fromCircle(
+        center: viewSize.center(Offset.zero),
+        radius: radius + centerSpace,
+      );
+      final results = verifyInOrder([
+        mockCanvasWrapper.saveLayer(
+          rect,
+          any,
+        ),
         mockCanvasWrapper.drawCircle(
           const Offset(100, 100),
-          10 + 15,
+          10 + 30,
           captureAny,
         ),
-      );
+        mockCanvasWrapper.drawCircle(
+          const Offset(100, 100),
+          10,
+          captureAny,
+        ),
+        mockCanvasWrapper.restore(),
+      ]);
+      final result = results[1];
       expect(result.callCount, 1);
       expect((result.captured.single as Paint).color, MockData.color2);
-      expect((result.captured.single as Paint).strokeWidth, 30);
-      expect((result.captured.single as Paint).style, PaintingStyle.stroke);
+      expect((result.captured.single as Paint).style, PaintingStyle.fill);
 
       final result2 = verify(
         mockCanvasWrapper.drawCircle(
@@ -190,7 +209,8 @@ void main() {
       );
 
       final barChartPainter = PieChartPainter();
-      final holder = PaintHolder<PieChartData>(data, data, 1);
+      final holder =
+          PaintHolder<PieChartData>(data, data, TextScaler.noScaling);
 
       final mockCanvasWrapper = MockCanvasWrapper();
       when(mockCanvasWrapper.size).thenAnswer((realInvocation) => viewSize);
@@ -835,14 +855,14 @@ void main() {
       final data1 = PieChartData(sections: sections, centerSpaceRadius: 15);
       final result1 = barChartPainter.calculateCenterRadius(
         viewSize,
-        PaintHolder<PieChartData>(data1, data1, 1),
+        PaintHolder<PieChartData>(data1, data1, TextScaler.noScaling),
       );
       expect(result1, 15);
 
       final data2 = PieChartData(sections: sections);
       final result2 = barChartPainter.calculateCenterRadius(
         viewSize,
-        PaintHolder<PieChartData>(data2, data2, 1),
+        PaintHolder<PieChartData>(data2, data2, TextScaler.noScaling),
       );
       expect(result2, 56);
     });
@@ -882,7 +902,8 @@ void main() {
         ],
       );
       final barChartPainter = PieChartPainter();
-      final holder = PaintHolder<PieChartData>(data, data, 1);
+      final holder =
+          PaintHolder<PieChartData>(data, data, TextScaler.noScaling);
 
       expect(
         barChartPainter
@@ -1137,7 +1158,11 @@ void main() {
         ],
       );
       final barChartPainter = PieChartPainter();
-      final holder = PaintHolder<PieChartData>(data, data, 1);
+      final holder = PaintHolder<PieChartData>(
+        data,
+        data,
+        TextScaler.noScaling,
+      );
 
       final result = barChartPainter.getBadgeOffsets(viewSize, holder);
       expect(
